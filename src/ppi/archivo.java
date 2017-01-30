@@ -48,6 +48,29 @@ public class archivo {
         return info;
     }
 
+    public String leerTxtLineReverse(String dir, int lim) {                 //lee lo que haya en un archivo txt, recibe como parametros la direccion tipo String y devuelve el String del contenido en una sola linea
+        String temp = "";
+        try {
+
+            BufferedReader bf = new BufferedReader(new FileReader(dir));
+            //String temp = "";
+            String bfRead;
+            String[] str = new String[lim];
+            int n = lim;
+            while ((bfRead = bf.readLine()) != null && n >= 0) {
+                n--;
+                str[n] = bfRead;
+            }
+            for (int x = 0; x < lim; x++) {
+                temp += str[x];
+            }
+            info = temp;
+        } catch (Exception e) {
+            System.err.println("SOY READ LINE REVERSE: No se encontro el archivo en " + dir);
+        }
+        return info;
+    }
+
     public String leerTxt(String dir) {                                         //lee lo que haya en un archivo txt, recibe como parametros la direccion tipo String y devuelve el String del contenido
         try {
             BufferedReader bf = new BufferedReader(new FileReader(dir));
@@ -150,5 +173,21 @@ public class archivo {
         } catch (Exception e) {
             System.err.println("SOY WRITE LINE: hay un error ");
         }
+    }
+
+    public int getLim(String dir) {
+        int n = 0;
+        try {
+            BufferedReader bf = new BufferedReader(new FileReader(dir));
+            String temp = "";
+            String bfRead;
+
+            while ((bfRead = bf.readLine()) != null) {
+                n++;
+            }
+        } catch (Exception e) {
+            System.err.println("SOY GET LIM: No se encontro el archivo en " + dir);
+        }
+        return n;
     }
 }
