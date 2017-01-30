@@ -5,15 +5,15 @@
  */
 package ppi;
 
-//import java.io.BufferedReader;
-//import java.io.InputStreamReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-//import java.net.SocketException;
-//import java.net.UnknownHostException;
+import java.util.Properties;
 import javax.swing.*;
 
 /**
@@ -22,12 +22,10 @@ import javax.swing.*;
  */
 class comInterfaz extends Thread {
 
-    //Definimos el sockets, número de bytes del buffer, y mensaje.
     DatagramSocket socket;
     InetAddress address;
     byte[] mensaje_bytes = new byte[256];
     String mensaje = "";
-    //Paquete
     DatagramPacket paquete;
     String cadenaMensaje = "";
     DatagramPacket servPaquete;
@@ -42,12 +40,12 @@ class comInterfaz extends Thread {
         try {
             mensaje_bytes = mensaje.getBytes();
             address = InetAddress.getByName("localhost");
-            mensaje = "runLF";
+            mensaje = "runPPI";
             mensaje_bytes = mensaje.getBytes();
             paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
             socket = new DatagramSocket();
             socket.send(paquete);
-            System.out.println("enviamos runLOFAR");
+            System.out.println("enviamos runPPI para inicializar la comunicación con el software");
             comSPPsend cspps = new comSPPsend();
             cspps.start();
             archivo a = new archivo();
@@ -58,29 +56,48 @@ class comInterfaz extends Thread {
                 servPaquete = new DatagramPacket(RecogerServidor_bytes, 256);
                 socket.receive(servPaquete);
                 cadenaMensaje = new String(RecogerServidor_bytes).trim();   //Convertimos el mensaje recibido en un string
-                //System.out.println(cadenaMensaje);                          //Imprimimos el paquete recibido
-                opcion = 1;
                 texto = "";
                 bTopWord = true;
                 topWord = "";
-                if ("LF_OFF".equals(cadenaMensaje)) {
+                if ("OFF".equals(cadenaMensaje)) {
                     window.setExtendedState(JFrame.ICONIFIED);
-                    System.out.println("LOFAR esta deshabilitado");
+                    //System.out.println("PPI esta deshabilitado");
                     if (cspps.getHabilitado()) {
                         cspps.setHabilitado(false);
                     }
-                } else if ("LF_ON".equals(cadenaMensaje)) {
+                } else if ("ON".equals(cadenaMensaje)) {
                     window.setExtendedState(JFrame.NORMAL);
-                    System.out.println("LOFAR esta habilitado");
+                    //System.out.println("PPI esta habilitado");
                     if (!cspps.getHabilitado()) {
                         cspps.setHabilitado(true);
                     }
-                } else if ("LF_EXIT".equals(cadenaMensaje)) {
+                } else if ("EXIT".equals(cadenaMensaje)) {
                     System.exit(0);
-                } else if ("LF_SAVE".equals(cadenaMensaje)) {
-                    a.save("resource/lofarDataRcv.txt");
-                } else if ("LF_RP".equals(cadenaMensaje)) {                     //Lofar repaint
+                } else if ("SAVE".equals(cadenaMensaje)) {
+                    a.save("resource/ppiData.txt");
+                } else if ("RP".equals(cadenaMensaje)) {                     //PPI repaint
                     window.repaint();
+                /*} else if ("LONG".equals(cadenaMensaje)) {                    
+                    Properties prop = new Properties();
+                    InputStream input = null;
+                    try {
+                        input = new FileInputStream("config.properties");
+                        prop.load(input);
+                        mensaje = "LONG" + prop.getProperty("longPPI") + ";";
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        if (input != null) {
+                            try {
+                                input.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    mensaje_bytes = mensaje.getBytes();
+                    paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
+                    socket.send(paquete);*/
                 } else if (!("START OK!".equals(cadenaMensaje))) {
                     char[] charArray = cadenaMensaje.toCharArray();
                     for (char temp : charArray) {

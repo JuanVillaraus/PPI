@@ -95,7 +95,7 @@ public class PPI extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         gn++;
-        System.out.println("paint component ciclo numero: " + gn);
+        //System.out.println("paint component ciclo numero: " + gn);
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getSize().width, getSize().height);
 
@@ -132,7 +132,6 @@ public class PPI extends JComponent {
         g.setColor(Color.BLACK);
             p = 251;
         g.fillOval((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2);
-        int sec = 90;
         /*for (int r = 0; r < sec; r++) {
             for (int p = 50; p <= 250; p++) {
                 //g.setColor(new Color(100, 255-p, (255 / sec) * r));
@@ -147,8 +146,9 @@ public class PPI extends JComponent {
                 g.drawArc((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2, ((360 / sec) * r) + 90, 360 / sec);
             }
         }*/
-        g.setColor(Color.WHITE);
-        g.drawArc(10, 10, limWinX - 10, limWinY - 10, 0 + 90, 360 / sec);
+        
+        //g.setColor(Color.WHITE);
+        //g.drawArc(10, 10, limWinX - 10, limWinY - 10, 0 + 90, 360 / sec);
 
         //Graphics2D g2d = (Graphics2D) g;
         //g2d.
@@ -163,14 +163,21 @@ public class PPI extends JComponent {
                 g.drawString((i * 30) + "°", getSize().width - 30, inicioCascadaY - 10);
             }
         }*/
-        r = 0;
+        int sec = 80;
+        r = 90;
         p = 50;
+        float angI = ((360 / sec) * r) + 90;
+        System.out.println("angI ="+angI);
+        int angF = (360 / sec);
+        int inc;
+        //int angI = ((360 / sec) * r) + 90;
+        //int angF = -(360 / sec);
         info = a.leerTxtLine(DIR);
         char[] charArray = info.toCharArray();
         for (char temp : charArray) {
             if (!(temp == ',') && !(temp == ';')) {
                 box += "" + temp;
-            } else if (temp == ',') {
+            } else if (temp == ','||temp == ';') {
                 n = Integer.parseInt(box);
                 if (n >= 0 && n <= 255) {
                     if (n < colorDw) {
@@ -179,39 +186,35 @@ public class PPI extends JComponent {
                         g.setColor(Color.GREEN);
                     } else {
                         //g.setColor(new Color(0, (n - colorDw) * 255 / (colorUp - colorDw), 0));
-                        g.setColor(new Color(0, n+54, 0));
+                        g.setColor(new Color(0, n, 0));
                     }
-                    g.drawArc((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2, ((360 / sec) * r) + 90, 360 / sec);
-                    r++;
+                    if(angI%9==0){
+                        inc = 1;
+                    } else {
+                        inc = 0;
+                    }
+                    g.drawArc((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2, (int)angI, -angF-inc);
+                    p++;
+                    g.drawArc((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2, (int)angI, -angF-inc);
+                    p--;
+                    angI-=4.5;
                     box = "";
                     c++;
                 } else {
                     System.out.println("Error #??: el valor a desplegar esta fuera de rango");
                 }
-            } else if (temp == ';') {
-                n = Integer.parseInt(box);
-                if (n >= 0 && n <= 255) {
-                    if (n < colorDw) {
-                        g.setColor(Color.BLACK);
-                    } else if (n > colorUp) {
-                        g.setColor(Color.GREEN);
-                    } else {
-                        //g.setColor(new Color(0, (n - colorDw) * 255 / (colorUp - colorDw), 0));
-                        g.setColor(new Color(0, n+54, 0));
-                    }
-                    g.drawArc((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2, ((360 / sec) * r) + 90, 360 / sec);
-                    box = "";
-                }
-                r = 0;
-                p++;
+            } else {
+                System.out.println("Error #??: el valor a desplegar no se reconoce");
+            }
+            if (temp == ';') {
+                angI = ((360 / sec) * r) + 90;
+                p+=2;
                 /*if ((t % 10) == 0) {
                     g.setColor(Color.WHITE);
                     g.drawLine(inicioCascadaX - 10, yi, inicioCascadaX - 05, yi);
                     g.drawString(topWord + "", 5, yi + 3);
                 }*/
-            } else {
-                System.out.println("Error #??: el valor a desplegar no se reconoce");
-            }
+            } 
         }
         /*xi = (limX / 2) + inicioCascadaX;
         g.setColor(new Color(0, 150, 0));
