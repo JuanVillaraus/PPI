@@ -41,6 +41,7 @@ public class comSPPsend extends Thread {
 
     @Override
     public void run() {
+        System.out.println("comSSPsend run");
         try {
             mensaje_bytes = mensaje.getBytes();
             address = InetAddress.getByName("localhost");

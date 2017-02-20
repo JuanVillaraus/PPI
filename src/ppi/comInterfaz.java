@@ -46,6 +46,8 @@ class comInterfaz extends Thread {
             socket = new DatagramSocket();
             socket.send(paquete);
             System.out.println("enviamos runPPI para inicializar la comunicación con el software");
+            //sendTCP st = new sendTCP();
+            //st.start();
             comSPPsend cspps = new comSPPsend();
             cspps.start();
             archivo a = new archivo();

@@ -48,8 +48,8 @@ public class archivo {
         return info;
     }
 
-    public String leerTxtLineReverse(String dir, int lim) {                 //lee lo que haya en un archivo txt, recibe como parametros la direccion tipo String y devuelve el String del contenido en una sola linea
-        String temp = "";
+    public String leerTxtLineReverse(String dir, int lim) {                 //lee lo que haya en un archivo txt, recibe como parametros la direccion tipo String y devuelve el String del contenido en una sola linea 
+        String temp = "";                                                   //de manera inversa es decir del la ultima fila hasta la primera, esta función fue creada para graficar el PPI a mayor resolución
         try {
 
             BufferedReader bf = new BufferedReader(new FileReader(dir));
@@ -70,6 +70,38 @@ public class archivo {
         }
         return info;
     }
+
+    /*public String leerTxtLineReverseN(String dir, int lim) {                    //lee lo que haya en un archivo txt, recibe como parametros la direccion tipo String y devuelve el String del contenido en una sola linea 
+        String temp = "";                                                       //de manera inversa es decir del la ultima fila hasta la primera, esta función fue creada para graficar el PPI a mayor resolución
+        String box = "";                                                        //a diferencia de la funcion anterior este romaliza cada fila para que el numero mas bajo sea restado, 
+        int num = 0;
+        try {                                                                   //y de esta manera realzar el objetivo.
+            BufferedReader bf = new BufferedReader(new FileReader(dir));
+            //String temp = "";
+            String bfRead;
+            String[] str = new String[lim];
+            int n = lim;
+            while ((bfRead = bf.readLine()) != null && n >= 0) {
+                n--;
+                str[n] = bfRead;
+                char[] charArray = str[n].toCharArray();
+                for (char temp : charArray) {
+                    if (!(temp == ',') && !(temp == ';')) {
+                        box += "" + temp;
+                    } else if (temp == ',' || temp == ';') {
+                        num = Integer.parseInt(box);
+                    }
+                }
+            }
+            for (int x = 0; x < lim; x++) {
+                temp += str[x];
+            }
+            info = temp;
+        } catch (Exception e) {
+            System.err.println("SOY READ LINE REVERSE: No se encontro el archivo en " + dir);
+        }
+        return info;
+    }*/
 
     public String leerTxt(String dir) {                                         //lee lo que haya en un archivo txt, recibe como parametros la direccion tipo String y devuelve el String del contenido
         try {
