@@ -102,13 +102,12 @@ public class archivo {
         }
         return info;
     }*/
-
     public String leerTxt(String dir) {                                         //lee lo que haya en un archivo txt, recibe como parametros la direccion tipo String y devuelve el String del contenido
         try {
             BufferedReader bf = new BufferedReader(new FileReader(dir));
             String temp = "";
             String bfRead;
-            int lim = 200;
+            int lim = 100;
             while (((bfRead = bf.readLine()) != null) && (lim > 0)) {
                 temp += bfRead;
                 temp += "\n";
@@ -168,38 +167,48 @@ public class archivo {
     }
 
     public void escribirTxtLine(String dir, String texto, int nLine) throws IOException {
+        System.out.println("Estoy en escribirTxtLine");
+        char[] charArray = leerTxtLine(dir).toCharArray();
+        File archivo = new File(dir);
+        int lim = 1;
         BufferedWriter bw;
-        String info = "";
+        
         try {
-            File archivo = new File(dir);
+            
             bw = new BufferedWriter(new FileWriter(archivo));
-            if (!archivo.exists()) {
-                for (int p = 0; p < 200; p++) {
-                    for (int r = 0; r < 90; r++) {
+            /*f (!archivo.exists()) {
+                for (int p = 0; p < 100; p++) {
+                    for (int r = 0; r < 80; r++) {
                         info += "0";
-                        if (r < 89) {
+                        if (r < 79) {
                             info += ",";
+                        }else{
+                            info += ";";
                         }
                     }
                     info += ";\n";
                 }
                 bw.write(info);
-            }
+            }*/
             try {
-                BufferedReader bf = new BufferedReader(new FileReader(dir));
-                String temp = "";
-                String bfRead;
-                while ((bfRead = bf.readLine()) != null) {
-                    nLine--;
-                    if (nLine == 0) {
-                        temp += texto + "\n";
-                    } else {
-                        temp += bfRead + "\n";
+
+                //String temp = "";
+                String info = "";
+                
+                for (char temp : charArray) {
+                    if (nLine == lim && temp == ';') {
+                        info += texto;
+                    } 
+                    if (nLine != lim) {
+                        info += temp;
+                    }
+                    if (temp == ';') {
+                        lim++;
+                        info += "\n";
                     }
                 }
-                bw.write(temp);
-                bw.close();
-            } catch (Exception e) {
+                bw.write(info);
+                bw.close();            } catch (Exception e) {
                 System.err.println("SOY READ: No se encontro el archivo en " + dir);
             }
         } catch (Exception e) {
@@ -211,10 +220,8 @@ public class archivo {
         int n = 0;
         try {
             BufferedReader bf = new BufferedReader(new FileReader(dir));
-            String temp = "";
-            String bfRead;
 
-            while ((bfRead = bf.readLine()) != null) {
+            while ((bf.readLine()) != null) {
                 n++;
             }
         } catch (Exception e) {

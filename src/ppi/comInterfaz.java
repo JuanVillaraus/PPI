@@ -45,41 +45,32 @@ class comInterfaz extends Thread {
             paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
             socket = new DatagramSocket();
             socket.send(paquete);
-            System.out.println("enviamos runPPI para inicializar la comunicación con el software");
-            //sendTCP st = new sendTCP();
-            //st.start();
-            comSPPsend cspps = new comSPPsend();
-            cspps.start();
+            System.out.println("enviamos " + mensaje + " para inicializar la comunicación con el software");
+            comSPV cspv = new comSPV();
+            cspv.setWindow(window);
+            cspv.start();
             archivo a = new archivo();
 
-            int i;
             do {
+                System.out.println("Estoy en el do while");
                 RecogerServidor_bytes = new byte[256];
                 servPaquete = new DatagramPacket(RecogerServidor_bytes, 256);
                 socket.receive(servPaquete);
                 cadenaMensaje = new String(RecogerServidor_bytes).trim();   //Convertimos el mensaje recibido en un string
-                texto = "";
-                bTopWord = true;
-                topWord = "";
+                System.out.println("Esto recibí: " + cadenaMensaje);
                 if ("OFF".equals(cadenaMensaje)) {
                     window.setExtendedState(JFrame.ICONIFIED);
-                    //System.out.println("PPI esta deshabilitado");
-                    if (cspps.getHabilitado()) {
-                        cspps.setHabilitado(false);
-                    }
                 } else if ("ON".equals(cadenaMensaje)) {
                     window.setExtendedState(JFrame.NORMAL);
-                    //System.out.println("PPI esta habilitado");
-                    if (!cspps.getHabilitado()) {
-                        cspps.setHabilitado(true);
-                    }
+                } else if ("PULSO".equals(cadenaMensaje)) {
+                    cspv.setHabilitado(true);
                 } else if ("EXIT".equals(cadenaMensaje)) {
                     System.exit(0);
                 } else if ("SAVE".equals(cadenaMensaje)) {
                     a.save("resource/ppiData.txt");
                 } else if ("RP".equals(cadenaMensaje)) {                     //PPI repaint
                     window.repaint();
-                /*} else if ("LONG".equals(cadenaMensaje)) {                    
+                } else if ("LONG".equals(cadenaMensaje)) {
                     Properties prop = new Properties();
                     InputStream input = null;
                     try {
@@ -99,23 +90,7 @@ class comInterfaz extends Thread {
                     }
                     mensaje_bytes = mensaje.getBytes();
                     paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
-                    socket.send(paquete);*/
-                } else if (!("START OK!".equals(cadenaMensaje))) {
-                    char[] charArray = cadenaMensaje.toCharArray();
-                    for (char temp : charArray) {
-                        if (bTopWord) {
-                            topWord += temp;
-                        } else {
-                            texto += "" + temp;
-                        }
-
-                    }
-                    //Calendar cal = Calendar.getInstance();
-                    //SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-                    //texto = sdf.format(cal.getTime()) + ",";
-                    a.escribirTxtLine("resource/ppi.txt", texto, Integer.parseInt(topWord));
-
-                    window.repaint();
+                    socket.send(paquete);
                 }
             } while (true);
         } catch (Exception e) {

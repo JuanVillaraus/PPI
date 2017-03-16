@@ -1,4 +1,4 @@
- /*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -17,7 +17,7 @@ import java.util.Properties;
  *
  * @author juan
  */
-public class comSPPsend extends Thread {
+public class comSPPsend {
 
     DatagramSocket socket;
     InetAddress address;
@@ -25,7 +25,6 @@ public class comSPPsend extends Thread {
     String mensaje = "";
     DatagramPacket paquete;
     boolean habilitado = false;
-    int t = 1000;
 
     public comSPPsend() {
 
@@ -39,46 +38,14 @@ public class comSPPsend extends Thread {
         this.habilitado = h;
     }
 
-    @Override
-    public void run() {
-        System.out.println("comSSPsend run");
+    public void enviar(String mensaje) {
         try {
-            mensaje_bytes = mensaje.getBytes();
             address = InetAddress.getByName("localhost");
-            mensaje = "PPI";
             mensaje_bytes = mensaje.getBytes();
             paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
             socket = new DatagramSocket();
             int n = 0;
-            Properties prop = new Properties();
-            InputStream input = null;
-            try {
-                input = new FileInputStream("config.properties");
-                prop.load(input);
-                t = Integer.parseInt(prop.getProperty("timeSend"));
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                if (input != null) {
-                    try {
-                        input.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            while (true) {
-                if (getHabilitado()) {
-                    n++;
-                    System.out.println(n);
-                    socket.send(paquete);
-                }
-                try {
-                    sleep(t);                                //espera un segundo
-                } catch (Exception e) {                     
-                    Thread.currentThread().interrupt();
-                }
-            }
+            socket.send(paquete);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);

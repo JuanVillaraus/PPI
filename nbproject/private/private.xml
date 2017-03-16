@@ -3,12 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/siviso/repositorio/PPI/src/ppi/comSPPsend.java</file>
-            <file>file:/home/siviso/repositorio/PPI/src/ppi/sendTCP.java</file>
-            <file>file:/home/siviso/repositorio/PPI/src/ppi/comTCP.java</file>
-            <file>file:/home/siviso/repositorio/PPI/src/ppi/PPI.java</file>
-            <file>file:/home/siviso/repositorio/PPI/src/ppi/archivo.java</file>
-            <file>file:/home/siviso/repositorio/PPI/src/ppi/comInterfaz.java</file>
+            <file>file:/home/siviso/repositorio/ppi/src/ppi/comSPV.java</file>
+            <file>file:/home/siviso/repositorio/ppi/src/ppi/comInterfaz.java</file>
+            <file>file:/home/siviso/repositorio/ppi/src/ppi/archivo.java</file>
+            <file>file:/home/siviso/repositorio/ppi/src/ppi/PPI.java</file>
         </group>
     </open-files>
 </project-private>
