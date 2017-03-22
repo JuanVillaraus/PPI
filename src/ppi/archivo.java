@@ -149,6 +149,18 @@ public class archivo {
             System.err.println("SOY WRITE hay un error ");
         }
     }
+    
+    public void escribirTxt(String dir, int n) throws IOException {      //escribe un texto en una archivo existente o lo crea, recibe como parametro la direccion del texto y el texto ambos tipo String
+        BufferedWriter bw;
+        try {
+            File archivo = new File(dir);
+            bw = new BufferedWriter(new FileWriter(archivo));
+            bw.write(String.valueOf(n));
+            bw.close();
+        } catch (Exception e) {
+            System.err.println("SOY WRITE hay un error ");
+        }
+    }
 
     public void save(String dir) {
         Calendar cal = Calendar.getInstance();
@@ -167,38 +179,20 @@ public class archivo {
     }
 
     public void escribirTxtLine(String dir, String texto, int nLine) throws IOException {
-        System.out.println("Estoy en escribirTxtLine");
         char[] charArray = leerTxtLine(dir).toCharArray();
         File archivo = new File(dir);
         int lim = 1;
         BufferedWriter bw;
-        
-        try {
-            
-            bw = new BufferedWriter(new FileWriter(archivo));
-            /*f (!archivo.exists()) {
-                for (int p = 0; p < 100; p++) {
-                    for (int r = 0; r < 80; r++) {
-                        info += "0";
-                        if (r < 79) {
-                            info += ",";
-                        }else{
-                            info += ";";
-                        }
-                    }
-                    info += ";\n";
-                }
-                bw.write(info);
-            }*/
-            try {
 
-                //String temp = "";
+        try {
+            bw = new BufferedWriter(new FileWriter(archivo));
+            try {
                 String info = "";
-                
+
                 for (char temp : charArray) {
                     if (nLine == lim && temp == ';') {
                         info += texto;
-                    } 
+                    }
                     if (nLine != lim) {
                         info += temp;
                     }
@@ -208,7 +202,47 @@ public class archivo {
                     }
                 }
                 bw.write(info);
-                bw.close();            } catch (Exception e) {
+                bw.close();
+            } catch (Exception e) {
+                System.err.println("SOY READ: No se encontro el archivo en " + dir);
+            }
+        } catch (Exception e) {
+            System.err.println("SOY WRITE LINE: hay un error ");
+        }
+    }
+
+    public void resetLine(String dir, int nLine, int longLine) throws IOException {
+        char[] charArray = leerTxtLine(dir).toCharArray();
+        File archivo = new File(dir);
+        int lim = 1;
+        BufferedWriter bw;
+
+        try {
+            bw = new BufferedWriter(new FileWriter(archivo));
+            try {
+                String info = "";
+
+                for (char temp : charArray) {
+                    if (nLine == lim && temp == ';') {
+                        for (int n = 0; n < longLine; n++) {
+                            if (n < longLine-1) {
+                                info += "155,";
+                            } else {
+                                info += "0;";
+                            }
+                        }
+                    }
+                    if (nLine != lim) {
+                        info += temp;
+                    }
+                    if (temp == ';') {
+                        lim++;
+                        info += "\n";
+                    }
+                }
+                bw.write(info);
+                bw.close();
+            } catch (Exception e) {
                 System.err.println("SOY READ: No se encontro el archivo en " + dir);
             }
         } catch (Exception e) {

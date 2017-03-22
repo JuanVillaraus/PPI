@@ -1,9 +1,11 @@
 #Tue Apr 12 08:46:23 CDT 2016
 database=localhost
-posicionX=33
-posicionY=290
-dimensionX=475
-dimensionY=440
+posicionX=13
+posicionY=350
+dimensionX=785
+dimensionY=668
 longBTR=11
 longLF=62
+longPPI=80
 timeSend=1000
+refPPI=0

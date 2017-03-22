@@ -44,7 +44,6 @@ public class comSPPsend {
             mensaje_bytes = mensaje.getBytes();
             paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
             socket = new DatagramSocket();
-            int n = 0;
             socket.send(paquete);
         } catch (Exception e) {
             System.err.println(e.getMessage());

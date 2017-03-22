@@ -22,6 +22,7 @@ public class PPI extends JComponent {
     int sizeCanalY;
     String infor;
     String info;
+    archivo a = new archivo();
 
     public static void main(String[] args) {
         JFrame window = new JFrame("PPI by SIVISO");
@@ -56,10 +57,11 @@ public class PPI extends JComponent {
                 }
             }
         }
+        //a.escribirTxt(REF, "0");
         window.setLocation(posicionX, posicionY);
         comInterfaz c = new comInterfaz();
         c.run(window);
-        
+
     }
 
     @Override
@@ -94,8 +96,8 @@ public class PPI extends JComponent {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getSize().width, getSize().height);
 
-        archivo a = new archivo();
         String DIR = "resource/ppiData.txt";   //variable estatica que guarda el nombre del archivo donde se guardara la informacion recivida para desplegarse
+
         int n = 0;  //variable de control int que guarda el numero del color a desplegar
         String box = ""; //variable que guarda de char en char hasta llegar al tope asignado para proceder a convertirlo a int
         int r = 0;
@@ -104,6 +106,7 @@ public class PPI extends JComponent {
 
         int colorUp = Integer.parseInt(a.leerTxtLine("resource/colorUp.txt"));
         int colorDw = Integer.parseInt(a.leerTxtLine("resource/colorDw.txt"));
+        int refPPI = Integer.parseInt(a.leerTxtLine("resource/ppiRef.txt"));
 
         int limWinX = getSize().width;
         int limWinY = getSize().height;
@@ -144,14 +147,14 @@ public class PPI extends JComponent {
                 System.out.println("Error #??: el valor a desplegar no se reconoce");
             }
             if (temp == ';') {
-               down = 255;
+                down = 255;
                 for (int x = 0; x < anillo.length; x++) {
-                    if(down>anillo[x]){
+                    if (down > anillo[x]) {
                         down = anillo[x];
                     }
                 }
                 for (int x = 0; x < anillo.length; x++) {
-                    anillo[x]-=down;
+                    anillo[x] -= down;
                 }
                 for (int x = 0; x < anillo.length; x++) {
                     if (anillo[x] >= 0 && anillo[x] <= 255) {
@@ -198,6 +201,10 @@ public class PPI extends JComponent {
         p = 50;
         g.fillOval((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2);
         g.setColor(Color.GRAY);
+        g.drawOval((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2);
+
+        g.setColor(Color.YELLOW);
+        p = refPPI*2 + 50;
         g.drawOval((limWinX / 2) - p, (limWinY / 2) - p, p * 2, p * 2);
     }
 }

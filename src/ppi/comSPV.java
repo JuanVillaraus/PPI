@@ -8,6 +8,7 @@ package ppi;
 //import com.sun.xml.internal.ws.api.message.Message;
 import java.net.*;
 import java.io.*;
+import java.util.Properties;
 import javax.swing.JFrame;
 
 /**
@@ -28,23 +29,45 @@ public class comSPV extends Thread {
     boolean habilitado = false;
     int t = 1000;
     JFrame window;
+    String DIR = "resource/ppiData.txt";
+    String REF = "resource/ppiRef.txt";
 
     public boolean getHabilitado() {
         return this.habilitado;
     }
 
+    public String getLongPPI() {
+        Properties prop = new Properties();
+        InputStream input = null;
+        String longPPI = null;
+        try {
+            input = new FileInputStream("config.properties");
+            prop.load(input);
+            longPPI = prop.getProperty("longPPI");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return longPPI;
+    }
+
     public void setHabilitado(boolean h) {
         this.habilitado = h;
     }
-    
-    public void setWindow(JFrame window){
+
+    public void setWindow(JFrame window) {
         this.window = window;
-        System.out.println("actualice window");
     }
 
     public void run() {
         try {
-            System.out.println("run de comSPV");
             comSPPsend cspps = new comSPPsend();
             socket = new Socket("192.168.1.10", 30000);
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -55,7 +78,6 @@ public class comSPV extends Thread {
             while (true) {
                 if (getHabilitado()) {
                     setHabilitado(false);
-                    //mensaje = in.readLine();
                     error = false;
                     texto = "";
                     word = "";
@@ -65,21 +87,13 @@ public class comSPV extends Thread {
                     System.out.println("Envie: " + mensaje);
                     msn = inp.readLine();
                     System.out.println("Recibí: " + msn);
-                    if (!("Modo PPI OK".equals(msn))) {
-                        error = true;
-                        System.out.println("Error: esperba <Modo PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
-                    }
-                    if (!error) {
+                    if ("Modo PPI OK".equals(msn)) {
                         mensaje = "ActivarPPI\n";
                         out.writeUTF(mensaje);
                         System.out.println("Envie: " + mensaje);
                         msn = inp.readLine();
                         System.out.println("Recibí: " + msn);
-                        if (!("Activar PPI OK".equals(msn))) {
-                            error = true;
-                            System.out.println("Error: esperba <Activar PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
-                        }
-                        if (!error) {
+                        if ("Activar PPI OK".equals(msn)) {
                             for (int n = 1; n <= 100; n++) {
                                 texto = "";
                                 nDatos = 0;
@@ -88,11 +102,7 @@ public class comSPV extends Thread {
                                 System.out.println("Envie: " + mensaje);
                                 msn = inp.readLine();
                                 System.out.println("Recibí: " + msn);
-                                if (!("Datos PPI OK".equals(msn))) {
-                                    error = true;
-                                    System.out.println("Error: esperba <Datos PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
-                                }
-                                if (!error) {
+                                if ("Datos PPI OK".equals(msn)) {
                                     mensaje = "PPI1\n";
                                     out.writeUTF(mensaje);
                                     System.out.println("Envie: " + mensaje);
@@ -163,16 +173,28 @@ public class comSPV extends Thread {
                                             }
                                             if (!error) {
                                                 System.out.println("Guardaré: " + texto);
-                                                a.escribirTxtLine("resource/ppiData.txt", texto, n);
+                                                a.escribirTxtLine(DIR, texto, n);
+                                                if (n < 100) {
+                                                    a.escribirTxt(REF, n + 1);
+                                                    //a.resetLine(DIR, n + 1, Integer.parseInt(getLongPPI()));
+                                                }
                                                 window.repaint();
-                                                cspps.enviar("PPI OK");
+                                                sleep(200);
                                             }
                                         }
                                     }
+                                } else {
+                                    error = true;
+                                    System.out.println("Error: esperba <Datos PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
                                 }
                             }
+                        } else {
+                            System.out.println("Error: esperba <Activar PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
                         }
+                    } else {
+                        System.out.println("Error: esperba <Modo PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
                     }
+                    cspps.enviar("PPI OK");
                 }
                 try {
                     sleep(t);                                //espera un segundo

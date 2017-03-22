@@ -34,6 +34,8 @@ class comInterfaz extends Thread {
     int opcion;
     boolean bTopWord;
     String topWord;
+    Properties prop = new Properties();
+    InputStream input = null;
 
     //@Override
     public void run(JFrame window) {
@@ -48,16 +50,34 @@ class comInterfaz extends Thread {
             System.out.println("enviamos " + mensaje + " para inicializar la comunicación con el software");
             comSPV cspv = new comSPV();
             cspv.setWindow(window);
+            //cspv.setHabilitado(true);
             cspv.start();
             archivo a = new archivo();
+            try {
+                input = new FileInputStream("config.properties");
+                prop.load(input);
+                mensaje = "LONG" + prop.getProperty("modelo") + ";";
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            if ("SSPV".equals(mensaje)) {
+                cspv.start();
+            }
 
             do {
-                System.out.println("Estoy en el do while");
                 RecogerServidor_bytes = new byte[256];
                 servPaquete = new DatagramPacket(RecogerServidor_bytes, 256);
                 socket.receive(servPaquete);
                 cadenaMensaje = new String(RecogerServidor_bytes).trim();   //Convertimos el mensaje recibido en un string
-                System.out.println("Esto recibí: " + cadenaMensaje);
+                //System.out.println("Esto recibí: " + cadenaMensaje);
                 if ("OFF".equals(cadenaMensaje)) {
                     window.setExtendedState(JFrame.ICONIFIED);
                 } else if ("ON".equals(cadenaMensaje)) {
@@ -71,23 +91,7 @@ class comInterfaz extends Thread {
                 } else if ("RP".equals(cadenaMensaje)) {                     //PPI repaint
                     window.repaint();
                 } else if ("LONG".equals(cadenaMensaje)) {
-                    Properties prop = new Properties();
-                    InputStream input = null;
-                    try {
-                        input = new FileInputStream("config.properties");
-                        prop.load(input);
-                        mensaje = "LONG" + prop.getProperty("longPPI") + ";";
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    } finally {
-                        if (input != null) {
-                            try {
-                                input.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
+                    mensaje = "LONG" + cspv.getLongPPI() + ";";
                     mensaje_bytes = mensaje.getBytes();
                     paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
                     socket.send(paquete);
