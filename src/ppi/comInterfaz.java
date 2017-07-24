@@ -11,8 +11,6 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Properties;
 import javax.swing.*;
 
@@ -27,36 +25,29 @@ class comInterfaz extends Thread {
     byte[] mensaje_bytes = new byte[256];
     String mensaje = "";
     DatagramPacket paquete;
+    int puerto = 0;
     String cadenaMensaje = "";
     DatagramPacket servPaquete;
     byte[] RecogerServidor_bytes = new byte[256];
-    String texto = "";
+    /*String texto = "";
     int opcion;
     boolean bTopWord;
-    String topWord;
+    String topWord;*/
     Properties prop = new Properties();
     InputStream input = null;
+    comSPV cspv = new comSPV();
+    char[] charArray;
+    String word;
 
     //@Override
     public void run(JFrame window) {
         try {
-            mensaje_bytes = mensaje.getBytes();
-            address = InetAddress.getByName("localhost");
-            mensaje = "runPPI";
-            mensaje_bytes = mensaje.getBytes();
-            paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
-            socket = new DatagramSocket();
-            socket.send(paquete);
-            System.out.println("enviamos " + mensaje + " para inicializar la comunicación con el software");
-            comSPV cspv = new comSPV();
             cspv.setWindow(window);
             //cspv.setHabilitado(true);
-            cspv.start();
-            archivo a = new archivo();
             try {
                 input = new FileInputStream("config.properties");
                 prop.load(input);
-                mensaje = "LONG" + prop.getProperty("modelo") + ";";
+                mensaje = prop.getProperty("modelo");
             } catch (IOException ex) {
                 ex.printStackTrace();
             } finally {
@@ -68,16 +59,30 @@ class comInterfaz extends Thread {
                     }
                 }
             }
-            if ("SSPV".equals(mensaje)) {
-                cspv.start();
+            if ("SSPP".equals(mensaje)) {
+                puerto = 5001;
+            } else if ("SSF".equals(mensaje)) {
+                puerto = 5002;
+            } else if ("SSPV".equals(mensaje)) {
+                puerto = 5003;
+                cspv.setPuerto(puerto);
+                //cspv.start();
             }
+            address = InetAddress.getByName("localhost");
+            mensaje = "runPPI";
+            mensaje_bytes = mensaje.getBytes();
+            paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, puerto);
+            socket = new DatagramSocket();
+            socket.send(paquete);
+            System.out.println("enviamos " + mensaje + " para inicializar la comunicación con el software");
+            archivo a = new archivo();
 
             do {
                 RecogerServidor_bytes = new byte[256];
                 servPaquete = new DatagramPacket(RecogerServidor_bytes, 256);
                 socket.receive(servPaquete);
                 cadenaMensaje = new String(RecogerServidor_bytes).trim();   //Convertimos el mensaje recibido en un string
-                //System.out.println("Esto recibí: " + cadenaMensaje);
+                System.out.println("Esto recibí: " + cadenaMensaje);
                 if ("OFF".equals(cadenaMensaje)) {
                     window.setExtendedState(JFrame.ICONIFIED);
                 } else if ("ON".equals(cadenaMensaje)) {
@@ -91,10 +96,26 @@ class comInterfaz extends Thread {
                 } else if ("RP".equals(cadenaMensaje)) {                     //PPI repaint
                     window.repaint();
                 } else if ("LONG".equals(cadenaMensaje)) {
-                    mensaje = "LONG" + cspv.getLongPPI() + ";";
+                    mensaje = "#" + cspv.getLongPPI();
                     mensaje_bytes = mensaje.getBytes();
                     paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
                     socket.send(paquete);
+                    if (puerto == 5003) {
+                        cspv.setPuerto(puerto);
+                        cspv.start();
+                    }
+                } else {
+                    charArray = cadenaMensaje.toCharArray();
+                    word = "";
+                    for (char temp : charArray) {
+                        if (temp == 'C' || temp == 'f' || temp == 'l' || temp == 'n' || temp == 'o' || temp == 'P' || temp == 's' || temp == 'T' || temp == 'u' || temp == 'x') {
+                            word += temp;
+                        }
+                    }
+                    if ("ConfPulsTx".equals(word)) {
+                        cspv.setConfPulso(cadenaMensaje);
+                        cspv.setHabilitado(true);
+                    }
                 }
             } while (true);
         } catch (Exception e) {

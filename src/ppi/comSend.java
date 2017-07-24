@@ -17,16 +17,17 @@ import java.util.Properties;
  *
  * @author juan
  */
-public class comSPPsend {
+public class comSend {
 
     DatagramSocket socket;
     InetAddress address;
     byte[] mensaje_bytes = new byte[256];
     String mensaje = "";
+    int puerto;
     DatagramPacket paquete;
     boolean habilitado = false;
 
-    public comSPPsend() {
+    public comSend() {
 
     }
 
@@ -37,12 +38,16 @@ public class comSPPsend {
     public void setHabilitado(boolean h) {
         this.habilitado = h;
     }
+    
+    public void setPuerto(int puerto){
+        this.puerto = puerto;
+    }
 
     public void enviar(String mensaje) {
         try {
             address = InetAddress.getByName("localhost");
             mensaje_bytes = mensaje.getBytes();
-            paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, 5002);
+            paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), address, puerto);
             socket = new DatagramSocket();
             socket.send(paquete);
         } catch (Exception e) {

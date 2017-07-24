@@ -31,6 +31,12 @@ public class comSPV extends Thread {
     JFrame window;
     String DIR = "resource/ppiData.txt";
     String REF = "resource/ppiRef.txt";
+    String rumboB = "resource/rumboB.txt";
+    String rumboP = "resource/rumboP.txt";
+    int puerto = 0;
+    String ConfPulso;
+    char[] charArray;
+    despliegue desp;
 
     public boolean getHabilitado() {
         return this.habilitado;
@@ -58,6 +64,10 @@ public class comSPV extends Thread {
         return longPPI;
     }
 
+    public String getConfPulso() {
+        return this.ConfPulso;
+    }
+
     public void setHabilitado(boolean h) {
         this.habilitado = h;
     }
@@ -66,9 +76,18 @@ public class comSPV extends Thread {
         this.window = window;
     }
 
+    public void setPuerto(int puerto) {
+        this.puerto = puerto;
+    }
+
+    public void setConfPulso(String ConfPulso) {
+        this.ConfPulso = ConfPulso;
+    }
+
     public void run() {
         try {
-            comSPPsend cspps = new comSPPsend();
+            comSend cspps = new comSend();
+            cspps.setPuerto(puerto);
             socket = new Socket("192.168.1.10", 30000);
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             BufferedReader inp = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -82,68 +101,77 @@ public class comSPV extends Thread {
                     texto = "";
                     word = "";
                     nDatos = 0;
+
+                    out.writeUTF(getConfPulso());
+                    System.out.println("Envie: " + mensaje);
+
+                    mensaje = "RUMBO\n";
+                    out.writeUTF(mensaje);
+                    System.out.println("Envie: " + mensaje);
+                    msn = inp.readLine();
+                    System.out.println("Recibí: " + msn);
+                    charArray = msn.toCharArray();
+                    for (char temp : charArray) {
+                        if (temp == '1' || temp == '2' || temp == '3' || temp == '4' || temp == '5' || temp == '6' || temp == '7' || temp == '8' || temp == '9' || temp == '0') {
+                            word += temp;
+                        }
+                        if (temp == ',') {
+                            a.escribirTxt(rumboB, word);
+                            word = "";
+                        }
+                        if (temp == ';') {
+                            a.escribirTxt(rumboP, word);
+                            word = "";
+                        }
+                    }
+                    window.repaint();
                     mensaje = "ModoPPI\n";
                     out.writeUTF(mensaje);
                     System.out.println("Envie: " + mensaje);
                     msn = inp.readLine();
                     System.out.println("Recibí: " + msn);
                     if ("Modo PPI OK".equals(msn)) {
-                        mensaje = "ActivarPPI\n";
+                        /*mensaje = "ConfPulsTx " + getConfPulso();
                         out.writeUTF(mensaje);
                         System.out.println("Envie: " + mensaje);
                         msn = inp.readLine();
                         System.out.println("Recibí: " + msn);
-                        if ("Activar PPI OK".equals(msn)) {
-                            for (int n = 1; n <= 100; n++) {
-                                texto = "";
-                                nDatos = 0;
-                                mensaje = "DatosPPI " + Integer.toString(n) + "\n";
-                                out.writeUTF(mensaje);
-                                System.out.println("Envie: " + mensaje);
-                                msn = inp.readLine();
-                                System.out.println("Recibí: " + msn);
-                                if ("Datos PPI OK".equals(msn)) {
-                                    mensaje = "PPI1\n";
+                        if ("ConfPulsTx OK".equals(msn)) {*/
+                            mensaje = "ActivarPPI\n";
+                            out.writeUTF(mensaje);
+                            System.out.println("Envie: " + mensaje);
+                            msn = inp.readLine();
+                            System.out.println("Recibí: " + msn);
+                            if ("Activar PPI OK".equals(msn)) {
+                                for (int n = 1; n <= 100; n++) {
+                                    texto = "";
+                                    nDatos = 0;
+                                    mensaje = "DatosPPI " + n + "\n";
                                     out.writeUTF(mensaje);
                                     System.out.println("Envie: " + mensaje);
                                     msn = inp.readLine();
                                     System.out.println("Recibí: " + msn);
-                                    char[] charArray = msn.toCharArray();
-                                    for (char temp : charArray) {
-                                        if (temp == '1' || temp == '2' || temp == '3' || temp == '4' || temp == '5' || temp == '6' || temp == '7' || temp == '8' || temp == '9' || temp == '0') {
-                                            word += temp;
-                                        }
-                                        if (temp == ',' || temp == ';') {
-                                            nDatos++;
-                                            if (word != "") {
-                                                texto += word;
-                                                texto += ",";
-                                                word = "";
-                                            } else {
-                                                error = true;
-                                                System.out.println("Error: dato en la posicion " + nDatos + " no fue encontrado");
-                                            }
-                                        }
-                                        if (temp == ';') {
-                                            if (nDatos != 40) {
-                                                error = true;
-                                                System.out.println("Error: esperaba recibir 40 datos y recibí " + nDatos);
-                                            }
-                                        }
-                                    }
-                                    if (!error) {
-                                        nDatos = 0;
-                                        error = false;
-                                        word = "";
-                                        mensaje = "PPI2\n";
-                                        System.out.println("Envie: " + mensaje);
+                                    if ("Datos PPI OK".equals(msn)) {
+                                        mensaje = "PPI1\n";
                                         out.writeUTF(mensaje);
+                                        System.out.println("Envie: " + mensaje);
                                         msn = inp.readLine();
                                         System.out.println("Recibí: " + msn);
                                         charArray = msn.toCharArray();
                                         for (char temp : charArray) {
+                                            if (temp == '1' || temp == '2' || temp == '3' || temp == '4' || temp == '5' || temp == '6' || temp == '7' || temp == '8' || temp == '9' || temp == '0') {
+                                                word += temp;
+                                            }
                                             if (temp == ',' || temp == ';') {
                                                 nDatos++;
+                                                if (word != "") {
+                                                    texto += word;
+                                                    texto += ",";
+                                                    word = "";
+                                                } else {
+                                                    error = true;
+                                                    System.out.println("Error: dato en la posicion " + nDatos + " no fue encontrado");
+                                                }
                                             }
                                             if (temp == ';') {
                                                 if (nDatos != 40) {
@@ -154,43 +182,68 @@ public class comSPV extends Thread {
                                         }
                                         if (!error) {
                                             nDatos = 0;
+                                            error = false;
+                                            word = "";
+                                            mensaje = "PPI2\n";
+                                            System.out.println("Envie: " + mensaje);
+                                            out.writeUTF(mensaje);
+                                            msn = inp.readLine();
+                                            System.out.println("Recibí: " + msn);
+                                            charArray = msn.toCharArray();
                                             for (char temp : charArray) {
-                                                if (temp == '1' || temp == '2' || temp == '3' || temp == '4' || temp == '5' || temp == '6' || temp == '7' || temp == '8' || temp == '9' || temp == '0') {
-                                                    word += temp;
-                                                }
                                                 if (temp == ',' || temp == ';') {
                                                     nDatos++;
-                                                    if (word != "") {
-                                                        texto += word;
-                                                        texto += temp;
-                                                        word = "";
-                                                    } else {
+                                                }
+                                                if (temp == ';') {
+                                                    if (nDatos != 40) {
                                                         error = true;
-                                                        System.out.println("Error: dato en la posicion " + nDatos + " no fue encontrado");
+                                                        System.out.println("Error: esperaba recibir 40 datos y recibí " + nDatos);
                                                     }
-
                                                 }
                                             }
                                             if (!error) {
-                                                System.out.println("Guardaré: " + texto);
-                                                a.escribirTxtLine(DIR, texto, n);
-                                                if (n < 100) {
-                                                    a.escribirTxt(REF, n + 1);
-                                                    //a.resetLine(DIR, n + 1, Integer.parseInt(getLongPPI()));
+                                                nDatos = 0;
+                                                for (char temp : charArray) {
+                                                    if (temp == '1' || temp == '2' || temp == '3' || temp == '4' || temp == '5' || temp == '6' || temp == '7' || temp == '8' || temp == '9' || temp == '0') {
+                                                        word += temp;
+                                                    }
+                                                    if (temp == ',' || temp == ';') {
+                                                        nDatos++;
+                                                        if (word != null) {
+                                                            texto += word;
+                                                            texto += temp;
+                                                            word = "";
+                                                        } else {
+                                                            error = true;
+                                                            System.out.println("Error: dato en la posicion " + nDatos + " no fue encontrado");
+                                                        }
+
+                                                    }
                                                 }
-                                                window.repaint();
-                                                sleep(200);
+                                                if (!error) {
+                                                    System.out.println("Guardaré: " + texto);
+                                                    //a.escribirTxtLine(DIR, texto, n);
+                                                    desp.setInfo(texto);
+                                                    if (n < 100) {
+                                                        a.escribirTxt(REF, n + 1);
+                                                        //a.resetLine(DIR, n + 1, Integer.parseInt(getLongPPI()));
+                                                    }
+                                                    window.repaint();
+                                                    sleep(200);
+                                                }
                                             }
                                         }
+                                    } else {
+                                        error = true;
+                                        System.out.println("Error: esperba <Datos PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
                                     }
-                                } else {
-                                    error = true;
-                                    System.out.println("Error: esperba <Datos PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
                                 }
+                            } else {
+                                System.out.println("Error: esperba <Activar PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
                             }
-                        } else {
-                            System.out.println("Error: esperba <Activar PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
-                        }
+                        /*} else {
+                            System.out.println("Error: esperba <ConfPulsOK OK> y recibí <" + msn + ">, Compruebe la comunicación");
+                        }*/
                     } else {
                         System.out.println("Error: esperba <Modo PPI OK> y recibí <" + msn + ">, Compruebe la comunicación");
                     }
