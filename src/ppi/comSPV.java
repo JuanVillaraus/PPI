@@ -29,7 +29,7 @@ public class comSPV extends Thread {
     boolean habilitado = false;
     int t = 1000;
     JFrame window;
-    String DIR = "resource/ppiData.txt";
+    //String DIR = "resource/ppiData.txt";
     String REF = "resource/ppiRef.txt";
     String rumboB = "resource/rumboB.txt";
     String rumboP = "resource/rumboP.txt";
@@ -37,6 +37,10 @@ public class comSPV extends Thread {
     String ConfPulso;
     char[] charArray;
     despliegue desp;
+    Properties prop = new Properties();
+    InputStream input = null;
+    String DIR = "";
+    int PORT = 0;
 
     public boolean getHabilitado() {
         return this.habilitado;
@@ -50,14 +54,14 @@ public class comSPV extends Thread {
             input = new FileInputStream("config.properties");
             prop.load(input);
             longPPI = prop.getProperty("longPPI");
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         } finally {
             if (input != null) {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println(e.getMessage());
                 }
             }
         }
@@ -86,9 +90,26 @@ public class comSPV extends Thread {
 
     public void run() {
         try {
+            try {
+                input = new FileInputStream("config.properties");
+                prop.load(input);
+                DIR = prop.getProperty("dirSSPV");
+                PORT = Integer.parseInt(prop.getProperty("portLF"));
+                System.out.println("Lofar comSPV " + DIR + " " + PORT);
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (IOException e) {
+                        System.err.println(e.getMessage());
+                    }
+                }
+            }
             comSend cspps = new comSend();
             cspps.setPuerto(puerto);
-            socket = new Socket("192.168.1.10", 30000);
+            socket = new Socket(DIR, PORT);
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             BufferedReader inp = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             archivo a = new archivo();

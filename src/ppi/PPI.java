@@ -8,7 +8,10 @@ package ppi;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import static java.lang.Thread.sleep;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 /**
@@ -23,6 +26,8 @@ public class PPI extends JFrame implements MouseListener {
     public static void main(String[] args) {
         PPI pi = new PPI();
     }
+    archivo a = new archivo();
+    String dirSound = "resource/dirSound.txt";
 
     public PPI() {
         //pack();
@@ -38,33 +43,43 @@ public class PPI extends JFrame implements MouseListener {
         int posicionY = 0;
         int dimensionX = 100;
         int dimensionY = 100;
+        String modelo = "";
         try {
             input = new FileInputStream("config.properties");
-            //load a properties file
             prop.load(input);
-            //get the propperty value and print it out
             posicionX = Integer.parseInt(prop.getProperty("posicionX"));
             posicionY = Integer.parseInt(prop.getProperty("posicionY"));
             dimensionX = Integer.parseInt(prop.getProperty("dimensionX"));
             dimensionY = Integer.parseInt(prop.getProperty("dimensionY"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+            modelo = prop.getProperty("modelo");
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         } finally {
             if (input != null) {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println(e.getMessage());
                 }
             }
         }
-        setSize(dimensionX, dimensionY);
+        switch (modelo) {
+            case "SSF":
+                setSize(dimensionX, dimensionY + 30);
+                break;
+            default:
+                setSize(dimensionX, dimensionY);
+                break;
+        }
         setLocation(posicionX, posicionY);
         desp.addMouseListener(this);                                            //Se le asigna un escuchador al despligue
         this.add(desp);
+        desp.run();
         repaint();
+        /*pg = new PlayGraphics();
+        pg.setWindow(this);*/
         comInterfaz c = new comInterfaz();
-        //c.run(this);
+        c.run(this);
     }
 
     @Override
@@ -75,45 +90,57 @@ public class PPI extends JFrame implements MouseListener {
         InputStream input = null;
         try {
             input = new FileInputStream("config.properties");
-            //load a properties file
             prop.load(input);
-            //get the propperty value and print it out
             dimensionX = Integer.parseInt(prop.getProperty("dimensionX"));
             dimensionY = Integer.parseInt(prop.getProperty("dimensionY"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         } finally {
             if (input != null) {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println(e.getMessage());
                 }
             }
         }
         return new Dimension(dimensionX, dimensionY);
     }
-    
+
     @Override
     public void mousePressed(MouseEvent e) {
-        //System.out.println("mouse clic en x:" + e.getX() + " y:" + e.getY());
-        desp.setLineaAux(e.getX(), e.getY());
+        System.out.println(e.getX() + " " + e.getY());
+        if (e.getY() < 620) {
+            desp.setLineaAux(e.getX(), e.getY());
+        } else if (e.getY() < 645) {
+            desp.setRangoSound(e.getX());
+        } else {
+            desp.resetRangoSound();
+            for (int i = 0; i < 11; i++) {
+                desp.run();
+                try {
+                    sleep(400);
+                } catch (InterruptedException ex) {
+                    System.err.println("play: " + ex.getMessage());
+                }
+            }
+        }
         repaint();
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        
+
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        
+
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        
+
     }
 
     @Override
