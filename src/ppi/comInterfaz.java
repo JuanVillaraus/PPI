@@ -90,13 +90,13 @@ class comInterfaz extends Thread {
                 if (null != cadenaMensaje) {
                     switch (cadenaMensaje) {
                         case "RUN":
-                        cspv.start();
-                        try {
-                            sleep(300);
-                        } catch (Exception e) {
-                            Thread.currentThread().interrupt();
-                            System.err.println("Error en el sleep del start en comInterfaz" + e.getMessage());
-                        }
+                            cspv.start();
+                            try {
+                                sleep(300);
+                            } catch (Exception e) {
+                                Thread.currentThread().interrupt();
+                                System.err.println("Error en el sleep del start en comInterfaz" + e.getMessage());
+                            }
                         case "OFF":
                             window.setExtendedState(JFrame.ICONIFIED);
                             break;

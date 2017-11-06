@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import static java.lang.Thread.sleep;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -23,7 +25,7 @@ import javax.swing.*;
  *
  * @author siviso
  */
-class despliegue extends JComponent implements Runnable {
+class despliegue extends JComponent {
 
     int inicioCascadaX = 75;
     int inicioCascadaY = 130;
@@ -37,14 +39,18 @@ class despliegue extends JComponent implements Runnable {
     archivo a = new archivo();
     private int lineaAX = 0;
     private int lineaAY = 0;
-    private int longPPI;
+    int longPPI;
     private int[][] waterfall;
     int[] sound = new int[600000];
     int limSound = 0;
     int rangoSound = 0;
+    int angMarc = 0;
+    String targets;
+   double[] target = new double[100];
+    int[] disTarget = new int[100];
 
     public despliegue() {
-        leerTxtArrayInt("resource/dos.txt");
+        //leerTxtArrayInt("resource/dos.txt");
     }
 
     @Override
@@ -73,13 +79,18 @@ class despliegue extends JComponent implements Runnable {
         try {
             input = new FileInputStream("config.properties");
             prop.load(input);
+            modelo = prop.getProperty("modelo");
+            longPPI = Integer.parseInt(prop.getProperty("longPPI"));
             colorUp = Integer.parseInt(a.leerTxtLine("resource/colorUp.txt"));
             colorDw = Integer.parseInt(a.leerTxtLine("resource/colorDw.txt"));
             refPPI = Integer.parseInt(a.leerTxtLine("resource/ppiRef.txt"));
-            rumboB = Integer.parseInt(a.leerTxtLine("resource/rumboB.txt"));
-            rumboP = Integer.parseInt(a.leerTxtLine("resource/rumboP.txt"));
-            this.longPPI = Integer.parseInt(prop.getProperty("longPPI"));
-            modelo = prop.getProperty("modelo");
+            if ("SSPV".equals(modelo)) {
+                rumboB = Integer.parseInt(a.leerTxtLine("resource/rumboB.txt"));
+                rumboP = Integer.parseInt(a.leerTxtLine("resource/rumboP.txt"));
+            }
+            /*else {
+                angMarc = Integer.parseInt(a.leerTxtLine("resource/angMarc.txt"));
+            }*/
         } catch (IOException ex) {
             ex.printStackTrace();
         } finally {
@@ -93,7 +104,8 @@ class despliegue extends JComponent implements Runnable {
         }
 
         limWinX = getSize().width;
-        switch (modelo) {
+        limWinY = getSize().height;
+        /*switch (modelo) {
             case "SSF":
                 limWinY = getSize().height - 80;
                 g.setColor(Color.GREEN);
@@ -102,7 +114,7 @@ class despliegue extends JComponent implements Runnable {
             default:
                 limWinY = getSize().height;
                 break;
-        }
+        }*/
 
         waterfall = new int[100][longPPI];
         for (int x = 0; x < 100; x++) {                                                 //inicializa el waterfall en cero
@@ -133,7 +145,89 @@ class despliegue extends JComponent implements Runnable {
         int angF = (360 / longPPI);
         int inc;
         int down;
-        info = a.leerTxtLineReverse(DIR, a.getLim(DIR));
+        info = "";
+        int angMarc = Integer.parseInt(a.leerTxtLine("resource/angMarc.txt"));
+        if ("SSF".equals(modelo)) {
+            targets = a.leerTxt("resource/targets.txt");
+            n = 0;
+            for (int x = 0; x < 100; x++) {
+                target[x] = 0;
+                disTarget[x] = 0;
+            }
+            char[] charArray = targets.toCharArray();
+            for (char temp : charArray) {
+                if (n < 10) {
+                    if (!(temp == ',') && !(temp == ';')) {
+                        info += temp;
+                    } else {
+                        try {
+                            target[n] = Double.parseDouble(info);
+                        } catch (Exception e) {
+                            System.err.println("Error catch del setInfo: " + e.getMessage());
+                        }
+                        info = "";
+                        n++;
+                    }
+                }
+            }
+            for (int x = 0; x < 100; x++) {                                                 //inicializa el waterfall en cero
+                disTarget[x] = 0;
+            }
+            if (n > 1) {
+                for (int i = 0; i < n; i++) {
+                    if (target[i + 1] > target[0]) {
+                        disTarget[i] = (int)((target[i + 1] - target[0])*10);
+                        System.out.println("disTarget " + (disTarget[i]/10));
+                    }
+                }
+            }
+            n = 0;
+            int ang = (int) (angMarc * longPPI / 360);
+            System.out.println("ang " + ang);
+            info = "";
+
+            for (int x = 99; x >= 0; x--) {                                                 //inicializa el waterfall en cero
+                n=0;
+                for (int y = 0; y < longPPI; y++) {
+                    if(disTarget[n]<x&&n<100){
+                        n++;
+                    }
+                    if (y == ang && x == disTarget[n]) {
+                        //waterfall[x][y] = 255;
+                        info += "250";
+                        /*if (disTarget[n] < disTarget[n+1]) {
+                            n++;
+                        }*/
+                    } else {
+                        //waterfall[x][y] = 0;
+                        info += "0";
+                    }
+                    if (y != longPPI - 1) {
+                        info += ",";
+                    } else {
+                        info += ";";
+                    }
+                }
+            }
+        }
+        /*info = "";
+        for (int x = 0; x < 100; x++) {                                                 //inicializa el waterfall en cero
+            for (int y = 0; y < longPPI; y++) {
+                info += "0";
+                if (y != longPPI - 1) {
+                    info += ",";
+                } else {
+                    info += ";";
+                }
+            }
+        }*/
+        //System.out.println("longPPI: " + longPPI);
+        //System.out.println("info:\n" + info);
+        if ("SSPV".equals(modelo)) {
+            info = a.leerTxtLineReverse(DIR, a.getLim(DIR));
+        }
+        //info = a.leerTxtLineReverse(DIR, a.getLim(DIR));
+
         char[] charArray = info.toCharArray();
         for (char temp : charArray) {
             if (!(temp == ',') && !(temp == ';')) {
@@ -209,37 +303,59 @@ class despliegue extends JComponent implements Runnable {
             g.drawString(x * 1.25 + "", (limWinX / 2) - 10, ((limWinY / 2) - x * 25) - 45);
         }
         g.drawString("La distancia entre anillos esta", 20, 20);
-        g.drawString("en milla nautica", 20, 35);
-
+        if ("SSPV".equals(modelo)) {
+            g.drawString("en milla nautica", 20, 35);
+        } else {
+            g.drawString("en metros", 20, 35);
+        }
         Graphics2D g2d = (Graphics2D) g;
         float[] dash = {5};
         g2d.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f));
-        rX = (int) (Math.cos((rumboB + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinX / 2));
-        rY = (int) (Math.sin((rumboB + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinY / 2));
-        g.setColor(Color.LIGHT_GRAY);
-        g.drawLine(limWinX / 2, limWinY / 2, rX, rY);
-        rX = (int) (Math.cos((rumboP + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinX / 2));
-        rY = (int) (Math.sin((rumboP + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinY / 2));
-        g.setColor(new Color(230, 95, 0));
-        g.drawLine(limWinX / 2, limWinY / 2, rX, rY);
 
         lineaAux(g, rumboB);
+
+        if ("SSPV".equals(modelo)) {
+            rX = (int) (Math.cos((rumboB + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinX / 2));
+            rY = (int) (Math.sin((rumboB + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinY / 2));
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawLine(limWinX / 2, limWinY / 2, rX, rY);
+            rX = (int) (Math.cos((rumboP + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinX / 2));
+            rY = (int) (Math.sin((rumboP + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinY / 2));
+            g.setColor(new Color(230, 95, 0));
+            g.drawLine(limWinX / 2, limWinY / 2, rX, rY);
+        } else {
+            rX = (int) (Math.cos((angMarc + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinX / 2));
+            rY = (int) (Math.sin((angMarc + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinY / 2));
+            g.setColor(new Color(230, 95, 0));
+            g.drawLine(limWinX / 2, limWinY / 2, rX, rY);
+        }
 
         g2d.setStroke(new BasicStroke(5.7f));
         g.setColor(Color.GREEN);
         //g.drawString("N", (limWinX/2)-5, 20);
         g2d.drawString("N", (limWinX / 2) - 5, 20);
 
-        g.setColor(Color.LIGHT_GRAY);
-        g.drawString("Rumbo del Buque " + rumboB + "°", limWinX - 150, 20);
-        rX = (int) (Math.cos((rumboB + 90) * Math.PI / 180 - Math.PI) * 40 + (limWinX / 2));
-        rY = (int) (Math.sin((rumboB + 90) * Math.PI / 180 - Math.PI) * 40 + (limWinY / 2));
-        rumbo(g, rX, rY);
-        g.setColor(new Color(230, 95, 0));
-        g.drawString("Rumbo del SSPV   " + rumboP + "°", limWinX - 150, 40);
-        rX = (int) (Math.cos((rumboP + 90) * Math.PI / 180 - Math.PI) * 25 + (limWinX / 2));
-        rY = (int) (Math.sin((rumboP + 90) * Math.PI / 180 - Math.PI) * 25 + (limWinY / 2));
-        rumbo(g, rX, rY);
+        if ("SSPV".equals(modelo)) {
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawString("Rumbo del Buque " + rumboB + "°", limWinX - 150, 20);
+            rX = (int) (Math.cos((rumboB + 90) * Math.PI / 180 - Math.PI) * 40 + (limWinX / 2));
+            rY = (int) (Math.sin((rumboB + 90) * Math.PI / 180 - Math.PI) * 40 + (limWinY / 2));
+            rumbo(g, rX, rY);
+            g.setColor(new Color(230, 95, 0));
+            g.drawString("Rumbo del SSPV   " + rumboP + "°", limWinX - 150, 40);
+            rX = (int) (Math.cos((rumboP + 90) * Math.PI / 180 - Math.PI) * 25 + (limWinX / 2));
+            rY = (int) (Math.sin((rumboP + 90) * Math.PI / 180 - Math.PI) * 25 + (limWinY / 2));
+            rumbo(g, rX, rY);
+        } else {
+            g.setColor(new Color(230, 95, 0));
+            rX = (int) (Math.cos((angMarc + 90) * Math.PI / 180 - Math.PI) * 25 + (limWinX / 2));
+            rY = (int) (Math.sin((angMarc + 90) * Math.PI / 180 - Math.PI) * 25 + (limWinY / 2));
+            rumbo(g, rX, rY);
+            if (angMarc < 0) {
+                angMarc += 360;
+            }
+            g.drawString("Angulo de marcación   " + angMarc + "°", limWinX - 180, 20);
+        }
 
     }
 
@@ -277,21 +393,32 @@ class despliegue extends JComponent implements Runnable {
         if (lineaAX != 0 && lineaAY != 0) {
             g.setColor(Color.YELLOW);
             Point p = new Point(lineaAX - (limWinX / 2), (limWinY / 2) - lineaAY);
-            double angSep = medirAngSep(p);
-            rX = (int) (Math.cos((angSep + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinX / 2));
-            rY = (int) (Math.sin((angSep + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinY / 2));
-            g.drawLine(limWinX / 2, limWinY / 2, rX, rY);
-            int dist = rumboB - (int) angSep;
-            if (dist > 180) {
-                dist -= 360;
+
+            if ("SSPV".equals(modelo)) {
+                double angSep = medirAngSep(p);
+                rX = (int) (Math.cos((angSep + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinX / 2));
+                rY = (int) (Math.sin((angSep + 90) * Math.PI / 180 - Math.PI) * 278 + (limWinY / 2));
+                g.drawLine(limWinX / 2, limWinY / 2, rX, rY);
+                int dist = rumboB - (int) angSep;
+                if (dist > 180) {
+                    dist -= 360;
+                }
+                if (dist < 0) {
+                    dist *= -1;
+                    g.drawString("a Estribor", limWinX - 70, 75);
+                } else {
+                    g.drawString("a Babor", limWinX - 58, 75);
+                }
+                g.drawString("Blanco respecto al Buque " + dist + "°", limWinX - 200, 60);
             }
-            if (dist < 0) {
-                dist *= -1;
-                g.drawString("a Estribor", limWinX - 70, 75);
-            } else {
-                g.drawString("a Babor", limWinX - 58, 75);
-            }
-            g.drawString("Blanco respecto al Buque " + dist + "°", limWinX - 200, 60);
+            /*else {
+                try {
+                    angMarc = (int) medirAngSep(p);
+                    a.escribirTxt("resource/angMarc.txt", angMarc);
+                } catch (IOException ex) {
+                    System.err.println("Error al guardar arnMarc " + ex.getMessage());
+                }
+            }*/
         }
     }
 
@@ -341,7 +468,7 @@ class despliegue extends JComponent implements Runnable {
         return this.waterfall;
     }
 
-    public void graficarAudio(Graphics g) {
+    /*public void graficarAudio(Graphics g) {
         int limX = 1;
         int xi = 0;
         //int[] sound = {128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160, 144, 128, 112, 96, 81, 66, 53, 40, 29, 20, 12, 6, 2, 0, 0, 2, 6, 12, 20, 29, 40, 53, 66, 81, 96, 112, 128, 144, 160, 175, 190, 203, 216, 227, 236, 244, 250, 254, 256, 256, 254, 250, 244, 236, 227, 216, 203, 190, 175, 160};
@@ -358,8 +485,7 @@ class despliegue extends JComponent implements Runnable {
         g.setColor(Color.WHITE);
         System.out.println("repaint");
         g.drawLine(rangoSound, 620, rangoSound, 645);
-    }
-    
+    }*/
     public void leerTxtArrayInt(String dir) {                                     //lee lo que haya en un archivo txt, recibe como parametros la direccion tipo String y devuelve el String del contenido en una sola linea
         String info = "";
         int lim = 0;
@@ -392,7 +518,7 @@ class despliegue extends JComponent implements Runnable {
         System.out.println(limSound);
     }
 
-    public void setRangoSound(int rangoSound) {
+    /*public void setRangoSound(int rangoSound) {
         this.rangoSound = rangoSound;
         repaint();
     }
@@ -406,5 +532,5 @@ class despliegue extends JComponent implements Runnable {
         repaint();
         //this.repaint(0, 645, getSize().width, getSize().height-645);
         System.out.println(rangoSound + " run");
-    }
+    }*/
 }
