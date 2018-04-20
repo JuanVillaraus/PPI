@@ -263,4 +263,20 @@ public class archivo {
         }
         return n;
     }
+    
+    public void save(String dir, String save) {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String date = sdf.format(cal.getTime());
+        BufferedWriter bw;
+        try {
+            File archivo = new File(dir + "_" + date + ".txt");
+            //info = leerTxt(dir);
+            bw = new BufferedWriter(new FileWriter(archivo));
+            bw.write(save);
+            bw.close();
+        } catch (Exception e) {
+            System.err.println("SOY SAVE: No se encontro el archivo " + dir);
+        }
+    }
 }

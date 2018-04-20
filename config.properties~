@@ -1,5 +1,5 @@
 #Tue Apr 12 08:46:23 CDT 2016
-modelo=SSPV
+modelo=SSF
 database=localhost
 posicionX=38
 posicionY=350
@@ -14,3 +14,4 @@ portBTR=10000
 portLF=20000
 portPPI=30000
 ConfPulsTx=no
+distBoyaAct=30
